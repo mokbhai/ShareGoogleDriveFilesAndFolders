@@ -6,6 +6,7 @@ import {
 import { clearRenderedPages } from "../scripts/manageRendered.js";
 import { isAdmin } from "../middleware/auth.js";
 import { pageRenderer } from "../utils/pageRenderer.js";
+import { deployApp } from "../scripts/deploy.js";
 
 const router = express.Router();
 
@@ -40,5 +41,8 @@ router.get("/stats/html", isAdmin, async (req, res) => {
     });
   }
 });
+
+// Add deployment route
+router.get("/deploy", deployApp);
 
 export default router;
