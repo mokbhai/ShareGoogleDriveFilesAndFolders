@@ -2,6 +2,7 @@ import { getDriveService } from "../config/googleDrive.js";
 import NodeCache from "node-cache";
 import compression from "compression";
 import { ShareLink } from "../models/shareLink.js";
+import { pageRenderer } from "../utils/pageRenderer.js";
 
 // Initialize cache with 30 minutes TTL
 const cache = new NodeCache({ stdTTL: 1800 });
@@ -318,7 +319,16 @@ export const listShareLinks = async (req, res) => {
 export const viewSharedFolder = async (req, res) => {
   try {
     const { token } = req.params;
-    const { folderId } = req.query;
+    const folderId = req.query.folderId;
+    const url = `/share/${token}${folderId ? `?folderId=${folderId}` : ""}`;
+
+    // Try to get cached version
+    const cachedPage = await pageRenderer.getRenderedPage(url);
+    if (cachedPage) {
+      return res.send(cachedPage);
+    }
+
+    // If no cached version, render the page
     const link = await ShareLink.getByToken(token);
 
     if (!link) {
@@ -413,7 +423,7 @@ export const viewSharedFolder = async (req, res) => {
       formattedSize: formatFileSize(file.size),
     }));
 
-    res.render("sharedFolder", {
+    const data = {
       folders,
       files,
       folderName,
@@ -423,6 +433,14 @@ export const viewSharedFolder = async (req, res) => {
       token,
       isMobile: isMobileDevice(req),
       serviceEmail: "biodatalisting@biodatalisting.iam.gserviceaccount.com",
+    };
+
+    // Render the page
+    res.render("sharedFolder", data, async (err, html) => {
+      if (err) throw err;
+      // Save the rendered page
+      await pageRenderer.savePage(url, html);
+      res.send(html);
     });
   } catch (error) {
     console.error("Error viewing shared folder:", error);

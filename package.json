@@ -8,7 +8,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css --watch",
-    "build:css:prod": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css --minify"
+    "build:css:prod": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css --minify",
+    "clear-cache": "node scripts/manageRendered.js"
   },
   "keywords": [],
   "author": "mokbhai",

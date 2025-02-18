@@ -3,6 +3,8 @@ import {
   getSharedFolderMobile,
   servePdf,
 } from "../controllers/apiController.js";
+import { clearRenderedPages } from "../scripts/manageRendered.js";
+import { isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -13,5 +15,8 @@ router.options("/share/:token", (req, res) => {
 
 router.get("/share/:token", getSharedFolderMobile);
 router.get("/pdf/:fileId", servePdf);
+
+// Add this new route
+router.post("/clear-cache", isAdmin, clearRenderedPages);
 
 export default router;

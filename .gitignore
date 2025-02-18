@@ -5,3 +5,4 @@ package-lock.json
 credentials.json
 data/
 **/BiodataAppi
+rendered/
