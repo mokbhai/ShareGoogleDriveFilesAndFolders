@@ -5,6 +5,7 @@ import {
 } from "../controllers/apiController.js";
 import { clearRenderedPages } from "../scripts/manageRendered.js";
 import { isAdmin } from "../middleware/auth.js";
+import { pageRenderer } from "../utils/pageRenderer.js";
 
 const router = express.Router();
 
@@ -17,6 +18,27 @@ router.get("/share/:token", getSharedFolderMobile);
 router.get("/pdf/:fileId", servePdf);
 
 // Add this new route
-router.post("/clear-cache", isAdmin, clearRenderedPages);
+router.get("/clear-cache", isAdmin, clearRenderedPages);
+
+// Add these new routes
+router.get("/stats", isAdmin, async (req, res) => {
+  try {
+    const stats = await pageRenderer.getPageStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get stats" });
+  }
+});
+
+router.get("/stats/html", isAdmin, async (req, res) => {
+  try {
+    const stats = await pageRenderer.getPageStats();
+    res.render("admin/stats", { stats });
+  } catch (error) {
+    res.status(500).render("error", {
+      error: "Failed to load statistics",
+    });
+  }
+});
 
 export default router;

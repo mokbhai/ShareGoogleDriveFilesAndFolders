@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import driveRoutes from "./routes/driveRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import { initializeApp } from "./config/init.js";
+import { hitCounter } from "./utils/hitCounter.js";
 // import cors from "cors";
 
 // Initialize environment variables
@@ -29,11 +30,17 @@ app.use(express.json());
 app.use("/", driveRoutes);
 app.use("/api", apiRoutes);
 
+// 404 handler - add this after all other routes
+app.use((req, res) => {
+  res.status(404).render("404");
+});
+
 const PORT = process.env.PORT || 3000;
 
 // Initialize app before starting server
 initializeApp()
-  .then(() => {
+  .then(async () => {
+    await hitCounter.initialize();
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { hitCounter } from "./hitCounter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,6 +14,7 @@ export const pageRenderer = {
     try {
       const filePath = this.getFilePath(url);
       const content = await fs.readFile(filePath, "utf-8");
+      await hitCounter.incrementHit(url);
       return content;
     } catch (error) {
       return null;
@@ -58,5 +60,31 @@ export const pageRenderer = {
     } catch {
       await fs.mkdir(RENDERED_DIR, { recursive: true });
     }
+  },
+
+  async getPageStats() {
+    const hits = await hitCounter.getAllHits();
+    const stats = [];
+
+    for (const [url, count] of Object.entries(hits)) {
+      try {
+        const filePath = this.getFilePath(url);
+        const exists = await fs
+          .access(filePath)
+          .then(() => true)
+          .catch(() => false);
+
+        stats.push({
+          url,
+          hits: count,
+          cached: exists,
+          lastAccessed: exists ? (await fs.stat(filePath)).mtime : null,
+        });
+      } catch (error) {
+        console.error(`Error getting stats for ${url}:`, error);
+      }
+    }
+
+    return stats.sort((a, b) => b.hits - a.hits);
   },
 };
