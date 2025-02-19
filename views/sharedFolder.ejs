@@ -169,7 +169,7 @@
 
                 <div class="file-actions">
                   <a
-                    href="https://docs.google.com/viewer?url=<%= file.previewUrl %>"
+                    href="<%= isMobile ? 'https://docs.google.com/viewer?url=https://' + host + file.previewUrl :  file.previewUrl %>"
                     target="_blank"
                     class="btn btn-primary"
                   >

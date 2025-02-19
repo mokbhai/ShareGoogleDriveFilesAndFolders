@@ -10,20 +10,20 @@ const __dirname = dirname(__filename);
 const RENDERED_DIR = path.join(__dirname, "..", "rendered");
 
 export const pageRenderer = {
-  async getRenderedPage(url) {
+  async getRenderedPage(url, isMobile) {
     try {
-      const filePath = this.getFilePath(url);
+      const filePath = this.getFilePath(url, isMobile);
       const content = await fs.readFile(filePath, "utf-8");
-      await hitCounter.incrementHit(url);
+      await hitCounter.incrementHit(this.getStatsKey(url, isMobile));
       return content;
     } catch (error) {
       return null;
     }
   },
 
-  async savePage(url, content) {
+  async savePage(url, content, isMobile) {
     try {
-      const filePath = this.getFilePath(url);
+      const filePath = this.getFilePath(url, isMobile);
       await this.ensureRenderedDir();
       await fs.writeFile(filePath, content, "utf-8");
     } catch (error) {
@@ -45,13 +45,17 @@ export const pageRenderer = {
     }
   },
 
-  getFilePath(url) {
-    // Convert URL to a valid filename
-    const fileName = url
+  getFilePath(url, isMobile) {
+    // Convert URL to a valid filename with device type
+    const fileName = `${url
       .replace(/[^a-zA-Z0-9]/g, "_")
       .toLowerCase()
-      .slice(0, 200);
+      .slice(0, 180)}_${isMobile ? "mobile" : "desktop"}`;
     return path.join(RENDERED_DIR, `${fileName}.html`);
+  },
+
+  getStatsKey(url, isMobile) {
+    return `${url}|${isMobile ? "mobile" : "desktop"}`;
   },
 
   async ensureRenderedDir() {
@@ -66,9 +70,10 @@ export const pageRenderer = {
     const hits = await hitCounter.getAllHits();
     const stats = [];
 
-    for (const [url, count] of Object.entries(hits)) {
+    for (const [key, count] of Object.entries(hits)) {
       try {
-        const filePath = this.getFilePath(url);
+        const [url, device] = key.split("|");
+        const filePath = this.getFilePath(url, device === "mobile");
         const exists = await fs
           .access(filePath)
           .then(() => true)
@@ -76,12 +81,13 @@ export const pageRenderer = {
 
         stats.push({
           url,
+          device,
           hits: count,
           cached: exists,
           lastAccessed: exists ? (await fs.stat(filePath)).mtime : null,
         });
       } catch (error) {
-        console.error(`Error getting stats for ${url}:`, error);
+        console.error(`Error getting stats for ${key}:`, error);
       }
     }
 

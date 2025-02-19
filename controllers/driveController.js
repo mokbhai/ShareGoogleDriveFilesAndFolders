@@ -321,9 +321,10 @@ export const viewSharedFolder = async (req, res) => {
     const { token } = req.params;
     const folderId = req.query.folderId;
     const url = `/share/${token}${folderId ? `?folderId=${folderId}` : ""}`;
+    const isMobile = isMobileDevice(req);
 
-    // Try to get cached version
-    const cachedPage = await pageRenderer.getRenderedPage(url);
+    // Try to get cached version for the specific device type
+    const cachedPage = await pageRenderer.getRenderedPage(url, isMobile);
     if (cachedPage) {
       return res.send(cachedPage);
     }
@@ -423,6 +424,8 @@ export const viewSharedFolder = async (req, res) => {
       formattedSize: formatFileSize(file.size),
     }));
 
+    const host = req.get("host");
+
     const data = {
       folders,
       files,
@@ -431,15 +434,16 @@ export const viewSharedFolder = async (req, res) => {
       currentFolderId,
       isSharedView: true,
       token,
-      isMobile: isMobileDevice(req),
+      isMobile,
       serviceEmail: "biodatalisting@biodatalisting.iam.gserviceaccount.com",
+      host,
     };
 
     // Render the page
     res.render("sharedFolder", data, async (err, html) => {
       if (err) throw err;
-      // Save the rendered page
-      await pageRenderer.savePage(url, html);
+      // Save the rendered page with device type
+      await pageRenderer.savePage(url, html, isMobile);
       res.send(html);
     });
   } catch (error) {

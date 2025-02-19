@@ -53,6 +53,16 @@
         color: #856404;
       }
 
+      .badge-info {
+        background: #cce5ff;
+        color: #004085;
+      }
+
+      .badge-primary {
+        background: #e8eaff;
+        color: #2d3091;
+      }
+
       .total-hits {
         font-size: 1.25rem;
         margin-bottom: 1rem;
@@ -72,6 +82,7 @@
         <thead>
           <tr>
             <th>URL</th>
+            <th>Device</th>
             <th>Hits</th>
             <th>Status</th>
             <th>Last Accessed</th>
@@ -81,6 +92,13 @@
           <% stats.forEach(stat => { %>
           <tr>
             <td><%= stat.url %></td>
+            <td>
+              <span
+                class="badge <%= stat.device === 'mobile' ? 'badge-info' : 'badge-primary' %>"
+              >
+                <%= stat.device %>
+              </span>
+            </td>
             <td><%= stat.hits %></td>
             <td>
               <span
