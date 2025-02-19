@@ -59,6 +59,42 @@
         padding: 20px;
         text-align: center;
       }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .logout-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #f8f9fa;
+        color: #666;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .logout-btn:hover {
+        background-color: #e9ecef;
+        color: #333;
+      }
+
+      .logout-btn i {
+        font-size: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -68,6 +104,12 @@
           <h1 class="header-title"><%= folderName %></h1>
           <div class="header-stats">
             <%= folders.length %> folders, <%= files.length %> documents
+          </div>
+          <div class="header-actions">
+            <a href="/auth/logout" class="logout-btn">
+              <i class="fas fa-sign-out-alt"></i>
+              Logout
+            </a>
           </div>
         </div>
       </header>
@@ -123,7 +165,7 @@
           <div class="file-grid">
             <% files.forEach(file => { %>
             <article class="file-card">
-              <div class= "<%= isMobile ? '' : 'preview-container' %>">
+              <div class="<%= isMobile ? '' : 'preview-container' %>">
                 <% if (file.previewUrl) { %> <% if (isMobile) { %>
                 <!-- For mobile devices, show a download button -->
                 <!-- <div class="mobile-preview">

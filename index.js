@@ -1,11 +1,14 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import dotenv from "dotenv";
 import driveRoutes from "./routes/driveRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import { initializeApp } from "./config/init.js";
 import { hitCounter } from "./utils/hitCounter.js";
+import { requireAuth, setUserIfExists } from "./middleware/authMiddleware.js";
 // import cors from "cors";
 
 // Initialize environment variables
@@ -23,12 +26,15 @@ app.set("view engine", "ejs");
 app.set("views", join(__dirname, "views"));
 
 // Middleware
+app.use(cookieParser());
 app.use(express.static(join(__dirname, "public")));
 app.use(express.json());
+app.use(setUserIfExists);
 
 // Routes
-app.use("/", driveRoutes);
-app.use("/api", apiRoutes);
+app.use("/auth", authRoutes);
+app.use("/", requireAuth, driveRoutes);
+app.use("/api", requireAuth, apiRoutes);
 
 // 404 handler - add this after all other routes
 app.use((req, res) => {
