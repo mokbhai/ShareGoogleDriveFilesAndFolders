@@ -4,5 +4,6 @@ node_modules
 package-lock.json
 credentials.json
 data/
-**/BiodataAppi
+**/BiodataApp
 rendered/
+public/.DS_Store

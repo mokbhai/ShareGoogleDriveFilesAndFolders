@@ -7,15 +7,16 @@ import { hitCounter } from "./hitCounter.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const RENDERED_DIR = path.join(__dirname, "..", "rendered");
+const RENDERED_DIR = path.join(__dirname, "..", "public");
 
 export const pageRenderer = {
   async getRenderedPage(url, isMobile) {
     try {
-      const filePath = this.getFilePath(url, isMobile);
-      const content = await fs.readFile(filePath, "utf-8");
-      await hitCounter.incrementHit(this.getStatsKey(url, isMobile));
-      return content;
+      const filePath =  path.join(RENDERED_DIR, `${url}.html`); // this.getFilePath(url);
+      // const content = await fs.readFile(filePath, "utf-8");
+      // await hitCounter.incrementHit(this.getStatsKey(url, isMobile));
+      const exists = await fs.access(filePath).then(() => true).catch(() => false);
+      return exists ? `${url}.html` : null;
     } catch (error) {
       return null;
     }
@@ -23,7 +24,7 @@ export const pageRenderer = {
 
   async savePage(url, content, isMobile) {
     try {
-      const filePath = this.getFilePath(url, isMobile);
+      const filePath = path.join(RENDERED_DIR, `${url}.html`); // this.getFilePath(url);
       await this.ensureRenderedDir();
       await fs.writeFile(filePath, content, "utf-8");
     } catch (error) {

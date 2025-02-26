@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import { initializeApp } from "./config/init.js";
 import { hitCounter } from "./utils/hitCounter.js";
 import { requireAuth, setUserIfExists } from "./middleware/authMiddleware.js";
+import { initRedis } from "./config/redis.js";
 // import cors from "cors";
 
 // Initialize environment variables
@@ -33,7 +34,7 @@ app.use(setUserIfExists);
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/", requireAuth, driveRoutes);
+app.use("/", driveRoutes);
 app.use("/api", requireAuth, apiRoutes);
 
 // 404 handler - add this after all other routes
@@ -46,10 +47,16 @@ const PORT = process.env.PORT || 3000;
 // Initialize app before starting server
 initializeApp()
   .then(async () => {
-    await hitCounter.initialize();
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    try {
+      await initRedis(); // Initialize Redis connection
+      await hitCounter.initialize();
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    } catch (error) {
+      console.error("Failed to initialize Redis or hit counter:", error);
+      process.exit(1);
+    }
   })
   .catch((error) => {
     console.error("Failed to initialize application:", error);

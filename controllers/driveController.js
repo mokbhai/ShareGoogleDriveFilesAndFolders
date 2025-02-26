@@ -321,12 +321,12 @@ export const viewSharedFolder = async (req, res) => {
     const { token } = req.params;
     const folderId = req.query.folderId;
     const url = `/share/${token}${folderId ? `?folderId=${folderId}` : ""}`;
-    const isMobile = isMobileDevice(req);
+    const isMobile = true; // isMobileDevice(req);
 
     // Try to get cached version for the specific device type
-    const cachedPage = await pageRenderer.getRenderedPage(url, isMobile);
-    if (cachedPage) {
-      return res.send(cachedPage);
+    const renderedPageLink = await pageRenderer.getRenderedPage(url, isMobile);
+    if (renderedPageLink) {
+      return res.status(302).redirect(renderedPageLink);
     }
 
     // If no cached version, render the page
@@ -435,7 +435,7 @@ export const viewSharedFolder = async (req, res) => {
       isSharedView: true,
       token,
       isMobile,
-      serviceEmail: "biodatalisting@biodatalisting.iam.gserviceaccount.com",
+      serviceEmail: " ",
       host,
     };
 
